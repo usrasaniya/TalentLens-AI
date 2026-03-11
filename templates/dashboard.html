@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .metric-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .metric-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        font-family: 'Syne', sans-serif;
+        color: var(--cyan);
+        margin: 0.5rem 0;
+    }
+
+    .metric-label {
+        color: var(--text2);
+        font-family: 'DM Mono', monospace;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr 350px;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media(max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        .metric-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media(max-width: 600px) {
+        .metric-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .panel h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .candidate-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* Scrollbar styling */
+    .candidate-list::-webkit-scrollbar { width: 6px; }
+    .candidate-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    .candidate-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    
+    .candidate-item {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.05);
+        padding: 1rem;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: border-color 0.2s;
+    }
+
+    .candidate-item:hover {
+        border-color: var(--cyan);
+    }
+
+    .c-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .c-role {
+        font-size: 0.8rem;
+        color: var(--text3);
+        font-family: 'DM Mono', monospace;
+    }
+
+    .c-score {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.25rem;
+        color: var(--green);
+        font-weight: 700;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 200px;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Table Panel */
+    .table-panel {
+        overflow-x: auto;
+    }
+
+    .risk-bar-container {
+        margin-bottom: 1rem;
+    }
+    
+    .risk-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        font-family: 'DM Mono', monospace;
+        color: var(--text2);
+        margin-bottom: 0.25rem;
+    }
+
+    .risk-bar {
+        height: 8px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .risk-fill {
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .risk-fill.low { background: var(--green); }
+    .risk-fill.med { background: #ffd700; }
+    .risk-fill.high { background: #ff3366; }
+
+    /* Center Gauge */
+    .big-gauge-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .big-gauge {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: conic-gradient(var(--cyan) calc(var(--score) * 1%), var(--border) 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 2rem;
+    }
+
+    .big-gauge::before {
+        content: '';
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        background: var(--card);
+        border-radius: 50%;
+    }
+
+    .big-score {
+        position: relative;
+        z-index: 1;
+        font-size: 4rem;
+        font-weight: 800;
+        font-family: 'Syne', sans-serif;
+        color: #fff;
+    }
+    
+    .gauge-label {
+        font-family: 'DM Mono', monospace;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+</style>
+
+<div class="dashboard-header">
+    <div>
+        <h2>Analytics Dashboard</h2>
+        <p class="mono-text" style="color:var(--text3);">Real-time evaluation metrics</p>
+    </div>
+    <a href="/api/export" class="btn-solid">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.5rem;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Export CSV
+    </a>
+</div>
+
+<div class="metric-cards">
+    <div class="metric-card">
+        <div class="metric-label">Total Candidates</div>
+        <div class="metric-value">{{ stats.total }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Average Score</div>
+        <div class="metric-value">{{ stats.avg_score }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Strong Fits</div>
+        <div class="metric-value" style="color: var(--green);">{{ stats.strong_fits }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Top Candidate</div>
+        <div class="metric-value" style="font-size: 1.5rem; word-break: break-all;">{{ stats.top_candidate }}</div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Left Sidebar: Ranked List -->
+    <div class="panel">
+        <h3>Ranked Candidates</h3>
+        <div class="candidate-list">
+            {% for c in candidates %}
+            <div class="candidate-item">
+                <div>
+                    <div class="c-name">{{ c.candidate_name }}</div>
+                    {% set rec_class = 'strong-fit' if 'Strong' in c.recommendation else 'moderate-fit' if 'Moderate' in c.recommendation else 'not-fit' %}
+                    <span class="badge {{ rec_class }}" style="font-size: 0.6rem; padding: 0.1rem 0.4rem;">{{ c.recommendation }}</span>
+                </div>
+                <div class="c-score">{{ c.match_score|default(0)|int }}</div>
+            </div>
+            {% else %}
+            <div style="color:var(--text3); text-align:center; padding: 2rem 0;">No candidates yet</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Center: Main Gauge (shows cohort average or just a cool visual) -->
+    <div class="panel">
+        <h3>Cohort Overall Performance</h3>
+        <div class="big-gauge-container">
+            <!-- calculate degrees limit 360 -->
+            {% set score_deg = (stats.avg_score * 3.6)|string + "deg" %}
+            <div class="big-gauge" style="background: conic-gradient(var(--cyan) {{ score_deg }}, var(--border) 0deg);">
+                <div class="big-score">{{ stats.avg_score }}</div>
+            </div>
+            <div class="gauge-label">Average Match Score</div>
+            <p style="text-align: center; color: var(--text2); margin-top: 1rem; max-width: 300px;">
+                Based on {{ stats.total }} evaluations processed by the Gemini AI Engine.
+            </p>
+        </div>
+    </div>
+
+    <!-- Right Panel: Charts & Risk -->
+    <div class="panel">
+        <h3>Insights</h3>
+        
+        <div class="chart-container">
+            <canvas id="donutChart"></canvas>
+        </div>
+
+        <h4 style="font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text2); margin-top: 2rem;">RISK DISTRIBUTION</h4>
+        
+        {% set total_risk = stats.low_risk + stats.med_risk + stats.hi_risk %}
+        {% set low_pct = (stats.low_risk / total_risk * 100) if total_risk > 0 else 0 %}
+        {% set med_pct = (stats.med_risk / total_risk * 100) if total_risk > 0 else 0 %}
+        {% set hi_pct = (stats.hi_risk / total_risk * 100) if total_risk > 0 else 0 %}
+
+        <div class="risk-bar-container">
+            <div class="risk-label"><span>Low Risk ({{ stats.low_risk }})</span> <span>{{ low_pct|round|int }}%</span></div>
+            <div class="risk-bar"><div class="risk-fill low" style="width: {{ low_pct }}%;"></div></div>
+        </div>
+        <div class="risk-bar-container">
+            <div class="risk-label"><span>Moderate Risk ({{ stats.med_risk }})</span> <span>{{ med_pct|round|int }}%</span></div>
+            <div class="risk-bar"><div class="risk-fill med" style="width: {{ med_pct }}%;"></div></div>
+        </div>
+        <div class="risk-bar-container">
+            <div class="risk-label"><span>High Risk ({{ stats.hi_risk }})</span> <span>{{ hi_pct|round|int }}%</span></div>
+            <div class="risk-bar"><div class="risk-fill high" style="width: {{ hi_pct }}%;"></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="panel table-panel">
+    <h3>Detailed Evaluation Log</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Candidate Name</th>
+                <th>Match Score</th>
+                <th>Recommendation</th>
+                <th>Risk Level</th>
+                <th>Key Strengths</th>
+                <th>Missing Skills</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in candidates %}
+            <tr>
+                <td style="font-weight: 500; color: #fff;">{{ c.candidate_name }}</td>
+                <td><span style="color: var(--cyan); font-weight: 700;">{{ c.match_score|default(0)|int }}</span></td>
+                <td>
+                    {% set rec_class = 'strong-fit' if 'Strong' in c.recommendation else 'moderate-fit' if 'Moderate' in c.recommendation else 'not-fit' %}
+                    <span class="badge {{ rec_class }}">{{ c.recommendation }}</span>
+                </td>
+                <td>
+                    {% set risk_class = 'low-risk' if 'Low' in c.risk_assessment else 'moderate-risk' if 'Moderate' in c.risk_assessment else 'high-risk' %}
+                    <span class="badge {{ risk_class }}">{{ c.risk_assessment }}</span>
+                </td>
+                <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ c.strengths }}">{{ c.strengths }}</td>
+                <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ c.missing_skills }}">{{ c.missing_skills }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Chart Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    
+    // Data passed from python
+    const strongFits = {{ stats.strong_fits }};
+    const total = {{ stats.total }};
+    const otherFits = total - strongFits;
+
+    if(total > 0) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Strong Fit', 'Other'],
+                datasets: [{
+                    data: [strongFits, otherFits],
+                    backgroundColor: [
+                        '#00e87a',
+                        'rgba(255, 255, 255, 0.1)'
+                    ],
+                    borderColor: 'rgba(2, 8, 16, 1)',
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#a0aab5',
+                            font: {
+                                family: "'DM Mono', monospace",
+                                size: 10
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    } else {
+        // Empty state chart
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['No Data'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['rgba(255, 255, 255, 0.05)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

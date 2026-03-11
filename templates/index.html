@@ -1,0 +1,1199 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Override container padding for this page only */
+    .container {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* BG */
+    .bg-base {
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: #020810;
+    }
+
+    .bg-glow {
+        position: fixed;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: -2;
+        filter: blur(90px);
+    }
+
+    .gl1 {
+        width: 520px;
+        height: 520px;
+        background: rgba(0, 212, 255, 0.05);
+        top: -120px;
+        left: -100px;
+        animation: gf1 22s ease-in-out infinite;
+    }
+
+    .gl2 {
+        width: 420px;
+        height: 420px;
+        background: rgba(100, 80, 200, 0.04);
+        bottom: -90px;
+        right: -70px;
+        animation: gf2 26s ease-in-out infinite;
+    }
+
+    .gl3 {
+        width: 300px;
+        height: 300px;
+        background: rgba(0, 200, 100, 0.03);
+        top: 40%;
+        left: 55%;
+        animation: gf3 18s ease-in-out infinite;
+    }
+
+    @keyframes gf1 {
+
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(60px, 40px);
+        }
+    }
+
+    @keyframes gf2 {
+
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(-45px, -55px);
+        }
+    }
+
+    @keyframes gf3 {
+
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(28px, -38px);
+        }
+    }
+
+    #bubbleCanvas {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    section {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ═══ HERO ═══ */
+    .s-hero {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 4rem 2rem 3rem;
+    }
+
+    .term-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .6rem;
+        background: rgba(0, 212, 255, 0.06);
+        border: 1px solid rgba(0, 212, 255, 0.16);
+        border-radius: 6px;
+        padding: .5rem 1.1rem;
+        margin-bottom: 1.6rem;
+        font-family: 'DM Mono', monospace;
+        font-size: .72rem;
+        color: #00e87a;
+        opacity: 0;
+        animation: up .6s .1s ease forwards;
+    }
+
+    .term-pill::before {
+        content: '❯';
+        color: #00d4ff;
+        margin-right: .3rem;
+    }
+
+    .tw {
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: .1em solid #00d4ff;
+        animation: typing 2.8s steps(36, end) .9s both, blink .7s step-end infinite 3.7s;
+    }
+
+    @keyframes typing {
+        from {
+            width: 0
+        }
+
+        to {
+            width: 100%
+        }
+    }
+
+    @keyframes blink {
+
+        0%,
+        100% {
+            border-color: transparent
+        }
+
+        50% {
+            border-color: #00d4ff
+        }
+    }
+
+    .hero-eye {
+        font-family: 'DM Mono', monospace;
+        font-size: .65rem;
+        letter-spacing: .2em;
+        color: #00d4ff;
+        text-transform: uppercase;
+        margin-bottom: 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        opacity: 0;
+        animation: up .6s .2s ease forwards;
+    }
+
+    .hero-eye::before,
+    .hero-eye::after {
+        content: '';
+        width: 40px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5));
+    }
+
+    .hero-eye::after {
+        background: linear-gradient(90deg, rgba(0, 212, 255, 0.5), transparent);
+    }
+
+    .hero-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(2rem, 4.5vw, 3.8rem);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -.025em;
+        margin-bottom: 1.2rem;
+        opacity: 0;
+        animation: up .6s .3s ease forwards;
+    }
+
+    .hero-title .w1 {
+        display: block;
+        color: #e2eef5;
+    }
+
+    .hero-title .w2 {
+        display: block;
+        background: linear-gradient(90deg, #00d4ff, #00e87a, #7c9fff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        background-size: 250%;
+        animation: gradShift 5s 1s linear infinite;
+    }
+
+    @keyframes gradShift {
+        0% {
+            background-position: 0%;
+        }
+
+        100% {
+            background-position: 250%;
+        }
+    }
+
+    .hero-title .w3 {
+        display: block;
+        color: #c8dde8;
+        font-weight: 700;
+    }
+
+    .hero-sub {
+        max-width: 500px;
+        font-size: .92rem;
+        color: #6a9ab0;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+        font-weight: 300;
+        opacity: 0;
+        animation: up .6s .42s ease forwards;
+    }
+
+    .hero-sub b {
+        color: #b8d4e0;
+        font-weight: 500;
+    }
+
+    .hero-btns {
+        display: flex;
+        gap: .9rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 3rem;
+        opacity: 0;
+        animation: up .6s .55s ease forwards;
+    }
+
+    .btn-p {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: .82rem;
+        background: linear-gradient(135deg, #00d4ff, #0090b8);
+        color: #020810;
+        padding: .72rem 1.7rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        letter-spacing: .02em;
+        transition: all .25s;
+        box-shadow: 0 0 24px rgba(0, 212, 255, 0.18);
+    }
+
+    .btn-p:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 40px rgba(0, 212, 255, 0.38);
+    }
+
+    .btn-g {
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        font-size: .82rem;
+        background: transparent;
+        color: #c0d8e4;
+        border: 1px solid rgba(0, 212, 255, 0.25);
+        padding: .72rem 1.7rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        letter-spacing: .02em;
+        transition: all .25s;
+    }
+
+    .btn-g:hover {
+        border-color: #00d4ff;
+        color: #00d4ff;
+        background: rgba(0, 212, 255, 0.04);
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 3rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        opacity: 0;
+        animation: up .6s .68s ease forwards;
+    }
+
+    .hs {
+        text-align: center;
+    }
+
+    .hs-v {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #00d4ff;
+        line-height: 1;
+    }
+
+    .hs-l {
+        font-size: .62rem;
+        color: #3a5a6a;
+        margin-top: .28rem;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-family: 'DM Mono', monospace;
+    }
+
+    .hs-sep {
+        width: 1px;
+        background: rgba(0, 212, 255, 0.1);
+        align-self: stretch;
+        margin: 0 .5rem;
+    }
+
+    .scroll-hint {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .35rem;
+        margin-top: 2rem;
+        opacity: 0;
+        animation: up .5s 1.3s ease forwards;
+    }
+
+    .sh-line {
+        width: 1px;
+        height: 38px;
+        background: linear-gradient(#00d4ff, transparent);
+        animation: shP 2s ease-in-out infinite;
+    }
+
+    .sh-txt {
+        font-family: 'DM Mono', monospace;
+        font-size: .54rem;
+        color: #3a5a6a;
+        letter-spacing: .16em;
+    }
+
+    @keyframes shP {
+
+        0%,
+        100% {
+            opacity: .25;
+        }
+
+        50% {
+            opacity: .9;
+        }
+    }
+
+    @keyframes up {
+        from {
+            opacity: 0;
+            transform: translateY(22px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ═══ TERMINAL ═══ */
+    .s-term {
+        padding: 3rem 2rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .term-wrap {
+        width: 100%;
+        max-width: 760px;
+        background: rgba(2, 8, 18, 0.92);
+        border: 1px solid rgba(0, 212, 255, 0.18);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 0 80px rgba(0, 212, 255, 0.06), 0 32px 64px rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(12px);
+    }
+
+    .term-bar {
+        background: rgba(0, 212, 255, 0.03);
+        border-bottom: 1px solid rgba(0, 212, 255, 0.09);
+        padding: .75rem 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+    }
+
+    .td {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .td:nth-child(1) {
+        background: #ff5f57;
+    }
+
+    .td:nth-child(2) {
+        background: #febc2e;
+    }
+
+    .td:nth-child(3) {
+        background: #28c840;
+    }
+
+    .t-hd {
+        font-family: 'DM Mono', monospace;
+        font-size: .65rem;
+        color: #3a5a6a;
+        margin: 0 auto;
+        letter-spacing: .1em;
+    }
+
+    .term-body {
+        padding: 1.5rem 2rem 2rem;
+        font-family: 'DM Mono', monospace;
+        font-size: .76rem;
+        line-height: 1.95;
+    }
+
+    .tl {
+        opacity: 0;
+        animation: tlF .2s ease forwards;
+    }
+
+    @keyframes tlF {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .cp {
+        color: #00d4ff;
+    }
+
+    .cg {
+        color: #00e87a;
+    }
+
+    .co {
+        color: #ffb300;
+    }
+
+    .cr {
+        color: #ff3d5a;
+    }
+
+    .cd {
+        color: #3a5a6a;
+    }
+
+    .cw {
+        color: #d8eaf2;
+    }
+
+    .cv {
+        color: #a78bfa;
+    }
+
+    .t-cur {
+        display: inline-block;
+        width: 7px;
+        height: 14px;
+        background: #00d4ff;
+        animation: tcB 1s step-end infinite;
+        vertical-align: middle;
+        margin-left: 2px;
+    }
+
+    @keyframes tcB {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+    }
+
+    /* ═══ SECTIONS ═══ */
+    .sec-wrap {
+        max-width: 1150px;
+        margin: 0 auto;
+        padding: 0 3rem;
+    }
+
+    .sec-tag {
+        font-family: 'DM Mono', monospace;
+        font-size: .65rem;
+        color: #00d4ff;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        margin-bottom: .7rem;
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+    }
+
+    .sec-tag::before {
+        content: '//';
+        color: #3a5a6a;
+    }
+
+    .sec-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+        font-weight: 800;
+        letter-spacing: -.025em;
+        margin-bottom: .7rem;
+        line-height: 1.15;
+        color: #e2eef5;
+    }
+
+    .sec-title span {
+        color: #00d4ff;
+    }
+
+    .sec-sub {
+        font-size: .88rem;
+        color: #6a9ab0;
+        max-width: 440px;
+        line-height: 1.75;
+        margin-bottom: 2.5rem;
+    }
+
+    /* FEATURES */
+    .s-feat {
+        padding: 4rem 0 5rem;
+    }
+
+    .feat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    @media(max-width:900px) {
+        .feat-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media(max-width:600px) {
+        .feat-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .fc {
+        background: rgba(4, 12, 26, 0.7);
+        border: 1px solid rgba(0, 212, 255, 0.07);
+        border-radius: 12px;
+        padding: 1.7rem;
+        transition: all .3s;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .fc::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.06), transparent 55%);
+        opacity: 0;
+        transition: opacity .3s;
+    }
+
+    .fc:hover {
+        border-color: rgba(0, 212, 255, 0.22);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 36px rgba(0, 212, 255, 0.07);
+    }
+
+    .fc:hover::after {
+        opacity: 1;
+    }
+
+    .fc-ic {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: rgba(0, 212, 255, 0.06);
+        border: 1px solid rgba(0, 212, 255, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .fc-t {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: .88rem;
+        color: #d8eaf2;
+        margin-bottom: .45rem;
+    }
+
+    .fc-d {
+        font-size: .78rem;
+        color: #5e8a9e;
+        line-height: 1.65;
+    }
+
+    .fc-tg {
+        display: inline-block;
+        margin-top: .9rem;
+        font-family: 'DM Mono', monospace;
+        font-size: .58rem;
+        color: #00d4ff;
+        background: rgba(0, 212, 255, 0.06);
+        border: 1px solid rgba(0, 212, 255, 0.13);
+        padding: .15rem .5rem;
+        border-radius: 4px;
+        letter-spacing: .07em;
+    }
+
+    /* PIPELINE */
+    .s-pipe {
+        padding: 4rem 0 5rem;
+        text-align: center;
+    }
+
+    .pipe-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        position: relative;
+        margin-top: 3rem;
+    }
+
+    .pipe-grid::before {
+        content: '';
+        position: absolute;
+        top: 26px;
+        left: 10%;
+        right: 10%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0, 144, 184, 0.5), rgba(0, 212, 255, 0.7), rgba(0, 144, 184, 0.5), transparent);
+    }
+
+    .ps {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .ps-n {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: rgba(2, 8, 16, 0.9);
+        border: 1px solid rgba(0, 212, 255, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: .88rem;
+        color: #00d4ff;
+        margin-bottom: .8rem;
+        box-shadow: 0 0 16px rgba(0, 212, 255, 0.1);
+        transition: all .3s;
+        backdrop-filter: blur(8px);
+    }
+
+    .ps:hover .ps-n {
+        background: rgba(0, 212, 255, 0.09);
+        box-shadow: 0 0 28px rgba(0, 212, 255, 0.3);
+    }
+
+    .ps-ic {
+        font-size: 1.3rem;
+        margin-bottom: .45rem;
+    }
+
+    .ps-t {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: .76rem;
+        color: #c8dde8;
+        margin-bottom: .25rem;
+    }
+
+    .ps-d {
+        font-size: .67rem;
+        color: #3a5a6a;
+        line-height: 1.5;
+        max-width: 95px;
+    }
+
+    @media(max-width:700px) {
+        .pipe-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .pipe-grid::before {
+            display: none;
+        }
+    }
+
+    /* METRICS */
+    .s-met {
+        padding: 4rem 0 5rem;
+    }
+
+    .met-lay {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+    }
+
+    @media(max-width:800px) {
+        .met-lay {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .mc-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .9rem;
+    }
+
+    .mc {
+        background: rgba(4, 12, 26, 0.7);
+        border: 1px solid rgba(0, 212, 255, 0.07);
+        border-radius: 12px;
+        padding: 1.3rem;
+        transition: all .3s;
+        backdrop-filter: blur(10px);
+    }
+
+    .mc:hover {
+        border-color: rgba(0, 212, 255, 0.2);
+    }
+
+    .mc-l {
+        font-family: 'DM Mono', monospace;
+        font-size: .58rem;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        color: #3a5a6a;
+        margin-bottom: .35rem;
+    }
+
+    .mc-v {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #00d4ff;
+        line-height: 1;
+    }
+
+    .mc-v.g {
+        color: #00e87a;
+    }
+
+    .mc-v.o {
+        color: #ffb300;
+    }
+
+    .mc-s {
+        font-size: .65rem;
+        color: #3a5a6a;
+        margin-top: .28rem;
+    }
+
+    .mc-bar {
+        margin-top: .8rem;
+        height: 2px;
+        background: rgba(0, 212, 255, 0.07);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .mc-fill {
+        height: 100%;
+        border-radius: 2px;
+    }
+
+    /* CTA */
+    .s-cta {
+        padding: 4rem 0 7rem;
+        text-align: center;
+    }
+
+    .cta-box {
+        max-width: 660px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.03), rgba(100, 80, 200, 0.03));
+        border: 1px solid rgba(0, 212, 255, 0.16);
+        border-radius: 18px;
+        padding: 4rem 2.5rem;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(14px);
+    }
+
+    .cta-box::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.035), transparent 60%);
+        animation: rotBg 28s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes rotBg {
+        from {
+            transform: rotate(0);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .cta-t {
+        font-family: 'Syne', sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -.025em;
+        margin-bottom: .9rem;
+        position: relative;
+        color: #e2eef5;
+    }
+
+    .cta-t span {
+        color: #00d4ff;
+    }
+
+    .cta-s {
+        font-size: .88rem;
+        color: #6a9ab0;
+        line-height: 1.8;
+        margin-bottom: 2.2rem;
+        position: relative;
+        max-width: 460px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-btns {
+        display: flex;
+        gap: .9rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .reveal {
+        opacity: 0;
+        transform: translateY(26px);
+        transition: opacity .65s ease, transform .65s ease;
+    }
+
+    .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+
+<div class="bg-base"></div>
+<div class="bg-glow gl1"></div>
+<div class="bg-glow gl2"></div>
+<div class="bg-glow gl3"></div>
+<canvas id="bubbleCanvas"></canvas>
+
+<!-- HERO -->
+<section class="s-hero" id="hero">
+    <div class="term-pill"><span class="tw">Initializing AI Evaluation Core v1.0...</span></div>
+    <div class="hero-eye">AI-Powered Recruitment Intelligence</div>
+    <h1 class="hero-title">
+        <span class="w1">Hire Smarter.</span>
+        <span class="w2">Evaluate Faster.</span>
+        <span class="w3">Score Better.</span>
+    </h1>
+    <p class="hero-sub">TalentLens AI™ uses <b>Google Gemini</b> to parse resumes, match candidates against your job
+        description, and generate structured scorecards — all in under <b>15 seconds</b>.</p>
+    <div class="hero-btns">
+        <a href="/evaluate" class="btn-p">⚡ Evaluate a Resume</a>
+        <a href="/dashboard" class="btn-g">📊 View Dashboard</a>
+    </div>
+    <div class="hero-stats">
+        <div class="hs">
+            <div class="hs-v" id="s1">0x</div>
+            <div class="hs-l">Faster Screening</div>
+        </div>
+        <div class="hs-sep"></div>
+        <div class="hs">
+            <div class="hs-v" id="s2">0s</div>
+            <div class="hs-l">Avg Eval Time</div>
+        </div>
+        <div class="hs-sep"></div>
+        <div class="hs">
+            <div class="hs-v" id="s3">0%</div>
+            <div class="hs-l">Match Accuracy</div>
+        </div>
+    </div>
+    <div class="scroll-hint">
+        <div class="sh-line"></div>
+        <div class="sh-txt">SCROLL</div>
+    </div>
+</section>
+
+<!-- TERMINAL -->
+<section class="s-term reveal" id="demo">
+    <div class="term-wrap">
+        <div class="term-bar">
+            <div class="td"></div>
+            <div class="td"></div>
+            <div class="td"></div>
+            <div class="t-hd">talentlens_ai — evaluation_engine.py</div>
+        </div>
+        <div class="term-body" id="termBody"></div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="s-feat" id="features">
+    <div class="sec-wrap">
+        <div class="reveal">
+            <div class="sec-tag">Core Capabilities</div>
+            <h2 class="sec-title">Everything a recruiter<br><span>actually needs</span></h2>
+            <p class="sec-sub">From raw resume to ranked scorecard — automated, intelligent, and fast.</p>
+        </div>
+        <div class="feat-grid">
+            <div class="fc reveal">
+                <div class="fc-ic">🧠</div>
+                <div class="fc-t">Deep Contextual Analysis</div>
+                <div class="fc-d">Goes beyond keyword matching. Our AI understands project complexity, experience
+                    context, and semantic relevance to your JD.</div>
+                <div class="fc-tg">AI · Gemini</div>
+            </div>
+            <div class="fc reveal">
+                <div class="fc-ic">⚡</div>
+                <div class="fc-t">Instant Scoring</div>
+                <div class="fc-d">Generates a 0–100 match score in seconds, backed by detailed strengths, missing
+                    skills, and a hiring recommendation.</div>
+                <div class="fc-tg">&lt; 15 seconds</div>
+            </div>
+            <div class="fc reveal">
+                <div class="fc-ic">🛡️</div>
+                <div class="fc-t">Risk Assessment</div>
+                <div class="fc-d">Automatically flags high-risk candidates based on experience gaps, tenure volatility,
+                    or mismatched seniority levels.</div>
+                <div class="fc-tg">Low · Med · High</div>
+            </div>
+            <div class="fc reveal">
+                <div class="fc-ic">📊</div>
+                <div class="fc-t">Analytics Dashboard</div>
+                <div class="fc-d">Visualize your talent pipeline with Chart.js graphs, sortable rankings, risk
+                    distribution, and cohort statistics.</div>
+                <div class="fc-tg">Chart.js</div>
+            </div>
+            <div class="fc reveal">
+                <div class="fc-ic">📄</div>
+                <div class="fc-t">Multi-format Parsing</div>
+                <div class="fc-d">Extracts text from complex PDF layouts, DOCX files, and plain text using pdfplumber
+                    and python-docx.</div>
+                <div class="fc-tg">PDF · DOCX · TXT</div>
+            </div>
+            <div class="fc reveal">
+                <div class="fc-ic">💾</div>
+                <div class="fc-t">CSV Export Ready</div>
+                <div class="fc-d">Download all AI evaluations to a structured Pandas-generated CSV. Plug directly into
+                    your ATS or HR system.</div>
+                <div class="fc-tg">Pandas · Export</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="s-pipe" id="pipeline">
+    <div class="sec-wrap">
+        <div class="reveal">
+            <div class="sec-tag" style="justify-content:center;">Evaluation Pipeline</div>
+            <h2 class="sec-title">From upload to insight <span>in 5 steps</span></h2>
+        </div>
+        <div class="pipe-grid reveal">
+            <div class="ps">
+                <div class="ps-n">01</div>
+                <div class="ps-ic">📤</div>
+                <div class="ps-t">Upload Resume</div>
+                <div class="ps-d">PDF, DOCX or TXT</div>
+            </div>
+            <div class="ps">
+                <div class="ps-n">02</div>
+                <div class="ps-ic">🔍</div>
+                <div class="ps-t">Extract & Clean</div>
+                <div class="ps-d">Parse & normalize</div>
+            </div>
+            <div class="ps">
+                <div class="ps-n">03</div>
+                <div class="ps-ic">🧬</div>
+                <div class="ps-t">Gemini Analysis</div>
+                <div class="ps-d">AI evaluates vs JD</div>
+            </div>
+            <div class="ps">
+                <div class="ps-n">04</div>
+                <div class="ps-ic">🎯</div>
+                <div class="ps-t">Score & Flag</div>
+                <div class="ps-d">Match score + risk</div>
+            </div>
+            <div class="ps">
+                <div class="ps-n">05</div>
+                <div class="ps-ic">📋</div>
+                <div class="ps-t">Scorecard</div>
+                <div class="ps-d">Full report + export</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- METRICS -->
+<section class="s-met" id="metrics">
+    <div class="sec-wrap">
+        <div class="met-lay">
+            <div class="reveal">
+                <div class="sec-tag">Live Analytics</div>
+                <h2 class="sec-title">Dashboard built for<br><span>real decisions</span></h2>
+                <p class="sec-sub" style="margin-bottom:1.8rem;">Every evaluation feeds your analytics dashboard —
+                    complete picture of your talent pipeline at a glance.</p>
+                <a href="/dashboard" class="btn-g" style="display:inline-flex;">Open Dashboard →</a>
+            </div>
+            <div class="mc-grid reveal">
+                <div class="mc">
+                    <div class="mc-l">Top Score</div>
+                    <div class="mc-v">92</div>
+                    <div class="mc-s">Best match found</div>
+                    <div class="mc-bar">
+                        <div class="mc-fill" style="width:92%;background:linear-gradient(90deg,#00b85a,#00e87a);"></div>
+                    </div>
+                </div>
+                <div class="mc">
+                    <div class="mc-l">Avg Score</div>
+                    <div class="mc-v o">71</div>
+                    <div class="mc-s">All candidates</div>
+                    <div class="mc-bar">
+                        <div class="mc-fill" style="width:71%;background:linear-gradient(90deg,#c97b2a,#ffb300);"></div>
+                    </div>
+                </div>
+                <div class="mc">
+                    <div class="mc-l">Strong Fits</div>
+                    <div class="mc-v g">4</div>
+                    <div class="mc-s">Hire-ready</div>
+                </div>
+                <div class="mc">
+                    <div class="mc-l">Eval Speed</div>
+                    <div class="mc-v" style="font-size:1.5rem;">~12s</div>
+                    <div class="mc-s">Per candidate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="s-cta" id="cta">
+    <div class="sec-wrap">
+        <div class="cta-box reveal">
+            <h2 class="cta-t">Ready to find your<br><span>best candidate?</span></h2>
+            <p class="cta-s">Upload a resume, enter the job description, and let TalentLens AI™ handle the rest. Full
+                scorecard in under 15 seconds.</p>
+            <div class="cta-btns">
+                <a href="/evaluate" class="btn-p">⚡ Start Evaluating Now</a>
+                <a href="/dashboard" class="btn-g">📊 View Analytics</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // BUBBLES
+    const canvas = document.getElementById('bubbleCanvas');
+    const ctx = canvas.getContext('2d');
+    let bubbles = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    function rnd(a, b) { return a + Math.random() * (b - a); }
+    function mkBubble() { return { x: rnd(0, canvas.width), y: rnd(canvas.height, canvas.height * 1.5), r: rnd(1.5, 5), speed: rnd(0.3, 1.1), drift: rnd(-0.25, 0.25), opacity: rnd(0.08, 0.3), hue: Math.random() > 0.65 ? 280 : 190 }; }
+    for (let i = 0; i < 120; i++) { const b = mkBubble(); b.y = rnd(0, canvas.height); bubbles.push(b); }
+    function drawB(b) {
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `hsla(${b.hue},100%,70%,${b.opacity})`; ctx.lineWidth = 0.6; ctx.stroke();
+        ctx.beginPath(); ctx.arc(b.x - b.r * .3, b.y - b.r * .3, b.r * .25, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${b.hue},100%,90%,${b.opacity * .6})`; ctx.fill();
+    }
+    function anim() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        bubbles.forEach((b, i) => {
+            b.y -= b.speed; b.x += b.drift;
+            b.opacity += (Math.random() - .5) * .005;
+            b.opacity = Math.max(0.05, Math.min(0.32, b.opacity));
+            drawB(b);
+            if (b.y + b.r < 0) bubbles[i] = mkBubble();
+        });
+        requestAnimationFrame(anim);
+    }
+    anim();
+
+    // COUNTERS
+    function cnt(id, end, suf, dur = 1800) {
+        const el = document.getElementById(id); let s = 0, step = end / 60;
+        const t = setInterval(() => { s += step; if (s >= end) { s = end; clearInterval(t); } el.textContent = Math.floor(s) + suf; }, dur / 60);
+    }
+    setTimeout(() => { cnt('s1', 5, 'x'); cnt('s2', 12, 's'); cnt('s3', 94, '%'); }, 700);
+
+    // TERMINAL
+    const lines = [
+        { c: 'cp', t: '❯ python evaluate.py --resume "john_doe.pdf"' },
+        { c: 'cd', t: '' },
+        { c: 'cd', t: '// TalentLens AI™ v1.0 — Evaluation Engine' },
+        { c: 'cd', t: '' },
+        { c: 'cg', t: '[ 1/5 ] Parsing resume    ✓  847 tokens extracted' },
+        { c: 'cg', t: '[ 2/5 ] Preprocessing     ✓  noise removed' },
+        { c: 'cg', t: '[ 3/5 ] Gemini API call   ✓  response in 8.2s' },
+        { c: 'cg', t: '[ 4/5 ] Scoring           ✓  scorecard generated' },
+        { c: 'cg', t: '[ 5/5 ] Saving to CSV     ✓  output/scores.csv' },
+        { c: 'cd', t: '' },
+        { c: 'cd', t: '────────────────────────────────────' },
+        { c: 'cw', t: 'SCORECARD — John Doe' },
+        { c: 'cd', t: '────────────────────────────────────' },
+        { c: 'cp', t: 'match_score     ', extra: { c: 'cg', t: '78%' } },
+        { c: 'cp', t: 'recommendation  ', extra: { c: 'co', t: 'Moderate Fit' } },
+        { c: 'cp', t: 'risk_level      ', extra: { c: 'cg', t: 'Low Risk' } },
+        { c: 'cp', t: 'strengths       ', extra: { c: 'cv', t: 'Python, SQL, REST APIs' } },
+        { c: 'cp', t: 'missing_skills  ', extra: { c: 'cr', t: 'AWS, Docker' } },
+        { c: 'cd', t: '' },
+        { c: 'cd', t: 'completed in 11.4s ✓' },
+        { cur: true },
+    ];
+    const tb = document.getElementById('termBody');
+    let li = 0;
+    function nl() {
+        if (li >= lines.length) return;
+        const l = lines[li++];
+        const d = document.createElement('div'); d.className = 'tl';
+        if (l.cur) { d.innerHTML = '<span class="cp">❯ </span><span class="t-cur"></span>'; }
+        else if (l.extra) { d.innerHTML = `<span class="${l.c}">${l.t}</span><span class="${l.extra.c}">${l.extra.t}</span>`; }
+        else { d.innerHTML = `<span class="${l.c}">${l.t}</span>`; }
+        tb.appendChild(d);
+        setTimeout(nl, l.t === '' ? 70 : 105);
+    }
+    setTimeout(nl, 1000);
+
+    // SCROLL REVEAL
+    const obs = new IntersectionObserver(e => { e.forEach(en => { if (en.isIntersecting) en.target.classList.add('visible'); }); }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+{% endblock %}
